@@ -252,18 +252,17 @@
         <td class="small">${(probAt(idx)*100).toFixed(2)}%</td>
         <td><button data-act="del">Delete</button></td>`;
       rowsEl.appendChild(tr);
-      tr.querySelector('[data-k="label"]').addEventListener('input', e=>{it.label=e.target.value; drawAll()});
-      tr.querySelector('[data-k="weight"]').addEventListener('input', e=>{it.weight=parseFloat(e.target.value||0); drawAll()});
-      tr.querySelector('[data-act="del"]').addEventListener('click', ()=>{items.splice(idx,1); drawAll()});
+      tr.querySelector('[data-k="label"]').addEventListener('input', e=>{it.label=e.target.value; drawWheel(); updateFooter(); saveState();});
+      tr.querySelector('[data-k="weight"]').addEventListener('input', e=>{it.weight=parseFloat(e.target.value||0); drawWheel(); updateFooter(); saveState();});
+      tr.querySelector('[data-act="del"]').addEventListener('click', ()=>{items.splice(idx,1); updateUI()});
     });
-    const sum = items.reduce((a,b)=>a+(+b.weight||0),0);
-    sumText.textContent = `Σ weights = ${sum.toFixed(2)}`;
-    sumBadge.textContent = `Total p = ${(sum>0?1:0).toFixed(0)}`;
+    updateFooter();
   }
+ }
 
   function escapeHtml(s){return s.replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
 
-  function drawAll(){
+  function updateUI(){
     rebuildTable();
     drawWheel();
     saveState();
@@ -363,7 +362,7 @@
       if (Array.isArray(obj.items)) items = obj.items.map(o=>({label:String(o.label||''), weight:Number(o.weight)||0}));
       snapToSlice = !!obj.snapToSlice; snapCheck.checked = snapToSlice;
       conds.value = String(obj.conds||'');
-      drawAll();
+      updateUI();
     }catch(e){ alert('Could not load state: '+e.message) }
   }
 
@@ -377,11 +376,11 @@
     seededRng = Number.isFinite(n) ? mulberry32(n>>>0) : null;
     seedBtn.textContent = seededRng? 'Seeded' : 'Seed RNG';
   });
-  resetBtn.addEventListener('click', ()=>{ items=[{label:"Prize A",weight:5},{label:"Prize B",weight:3},{label:"Try Again",weight:1},{label:"Mystery",weight:1}]; angle=0; seededRng=null; conds.value=''; snapCheck.checked=false; snapToSlice=false; drawAll(); });
+  resetBtn.addEventListener('click', ()=>{ items=[{label:"Prize A",weight:5},{label:"Prize B",weight:3},{label:"Try Again",weight:1},{label:"Mystery",weight:1}]; angle=0; seededRng=null; conds.value=''; snapCheck.checked=false; snapToSlice=false; updateUI(); });
   snapCheck.addEventListener('change', e=>{snapToSlice = e.target.checked; saveState()});
-  addRow.addEventListener('click', ()=>{ items.push({label:"New",weight:1}); drawAll()});
-  sortBtn.addEventListener('click', ()=>{ items.sort((a,b)=>b.weight-a.weight); drawAll()});
-  shuffleBtn.addEventListener('click', ()=>{ for(let i=items.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [items[i],items[j]]=[items[j],items[i]] } drawAll()});
+  addRow.addEventListener('click', ()=>{ items.push({label:"New",weight:1}); updateUI()});
+  sortBtn.addEventListener('click', ()=>{ items.sort((a,b)=>b.weight-a.weight); updateUI()});
+  shuffleBtn.addEventListener('click', ()=>{ for(let i=items.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [items[i],items[j]]=[items[j],items[i]] } updateUI()});
 
   saveBtn.addEventListener('click', saveState);
   loadBtn.addEventListener('click', ()=> loadState());
@@ -398,11 +397,14 @@
     file.text().then(txt=> loadState(txt));
   });
 
-  document.addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='r'){ e.preventDefault(); spin() }});
+  document.addEventListener('keydown', e=>{
+    if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if(e.key.toLowerCase()==='r'){ e.preventDefault(); spin() }
+  });
 
   // ---------- Boot ----------
   loadState();
-  drawAll();
+  updateUI();
 })();
 </script>
 </body>
