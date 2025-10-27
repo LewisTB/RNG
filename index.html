@@ -258,7 +258,12 @@
     });
     updateFooter();
   }
- }
+
+  function updateFooter(){
+    const sum = items.reduce((a,b)=>a + (Number(b.weight)||0), 0);
+    sumText.textContent = `Σ weights = ${sum.toFixed(2)}`;
+    sumBadge.textContent = sum > 0 ? 'Total p = 1' : 'Total p = 0';
+  }
 
   function escapeHtml(s){return s.replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]))}
 
@@ -360,6 +365,9 @@
       if(!s) return;
       const obj = JSON.parse(s);
       if (Array.isArray(obj.items)) items = obj.items.map(o=>({label:String(o.label||''), weight:Number(o.weight)||0}));
+      if (!items || items.length === 0) {
+        items = [{label:"Prize A",weight:5},{label:"Prize B",weight:3},{label:"Try Again",weight:1},{label:"Mystery",weight:1}];
+      }
       snapToSlice = !!obj.snapToSlice; snapCheck.checked = snapToSlice;
       conds.value = String(obj.conds||'');
       updateUI();
