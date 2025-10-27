@@ -197,16 +197,31 @@
       // border
       ctx.lineWidth = 2; ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.stroke();
 
-      // text
-      const mid = (start+end)/2;
-      ctx.save();
-      ctx.translate(cx + Math.cos(mid)*(r*0.64), cy + Math.sin(mid)*(r*0.64));
-      ctx.rotate(mid + Math.PI/2);
-      ctx.fillStyle = "#f6f8ff";
-      ctx.font = "600 14px system-ui, -apple-system, Segoe UI, Roboto";
-      const label = items[i].label;
-      truncateText(ctx,label,r*0.9);
-      ctx.restore();
+   // text centered in slice, upright
+const label = items[i].label;
+const maxTextWidth = r * 0.55;
+const font = "600 15px system-ui, -apple-system, Segoe UI, Roboto";
+ctx.font = font;
+
+// Truncate if needed
+let text = label;
+while (ctx.measureText(text).width > maxTextWidth && text.length > 2) {
+  text = text.slice(0, -2) + "…";
+}
+
+// Position text along slice radius
+const textX = cx + Math.cos(mid) * (r * 0.55);
+const textY = cy + Math.sin(mid) * (r * 0.55);
+
+ctx.save();
+ctx.translate(textX, textY);
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+ctx.fillStyle = "#f6f8ff";
+ctx.font = font;
+ctx.rotate(0); // keep upright
+ctx.fillText(text, 0, 0);
+ctx.restore();
 
       start = end;
     });
